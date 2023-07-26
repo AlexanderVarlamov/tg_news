@@ -1,12 +1,16 @@
-from aiogram import types, Router
+import logging
+
+from aiogram import types, Router, Bot
 from aiogram.filters import Command
 from aiogram.filters.callback_data import CallbackData
+from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from controllers.db import user_is_present, add_user
+from app import bot
+from conf import admin_id, api_token
+from controllers.db import user_is_present, add_user, get_users, set_user_status
 from controllers.processing import process_sources
 from controllers.sources_dict import news_sources
-
 
 router = Router()
 
@@ -35,6 +39,22 @@ async def send_welcome(message: types.Message):
     await cmd_buttons(message)
 
 
+@router.message(Command(commands='sendall'))
+async def send_message_to_subscribers(message: types.Message):
+    if message.chat.type == 'private':
+        if message.from_user.id == admin_id:
+            text_to_send = message.text[9:]
+            users = get_users()
+            for row in users:
+                try:
+                    await bot.send_message(chat_id=row[0], text=text_to_send)
+                    if not row[1]:
+                        set_user_status(row[0], True)
+                except Exception as e:
+                    logging.warning(e)
+                    set_user_status(row[0], False)
+
+
 @router.message(Command(commands=news_sources.keys()))
 async def get_all_news(message: types.Message):
     await process_sources(message)
@@ -56,5 +76,3 @@ async def process_button_up(query: types.CallbackQuery):
     new_message = await query.message.edit_text(text='/' + cd_data.source)
     await process_sources(new_message)
     await cmd_buttons(new_message)
-
-

@@ -32,7 +32,7 @@ def add_user(user_id: int):
 
 def get_users():
     with Session(engine) as session:
-        users = session.execute(select(User.user_id)).all()
+        users = session.execute(select(User.user_id, User.is_active)).all()
         return users
 
 
@@ -50,3 +50,4 @@ def user_is_present(user_id: int):
 
 
 Base.metadata.create_all(engine)
+
