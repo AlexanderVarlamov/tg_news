@@ -1,5 +1,4 @@
 import logging
-from copy import deepcopy
 
 from aiogram import types, Router
 from aiogram.filters import Command
@@ -8,14 +7,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app import bot
 from conf import admin_id, internal_backend
-from controllers.backend.sources_dict import sources as news_sources_int
+from controllers.backend.sources_dict import sources_and_description as news_sources_int
 from controllers.db import user_is_present, add_user, get_users, set_user_status
-from controllers.processing import process_sources
-from controllers.sources_dict import news_sources as news_sources_ext
+from controllers.processing import process_sources, get_greeting
+from controllers.sources_dict import sources_and_description as news_sources_ext
 
 router = Router()
-news_sources = deepcopy(news_sources_int) if internal_backend else news_sources_ext
-news_sources['all'] = 'all'
+news_sources = news_sources_int if internal_backend else news_sources_ext
 
 
 class ButtonCallBack(CallbackData, prefix='but'):
@@ -27,13 +25,7 @@ async def send_welcome(message: types.Message):
     """
     This handler will be called when user sends `/start` or `/help` command
     """
-    msg = """
-Привет! Это бот для агрегации последних новостей
-Допустимые опции:
-    /all Новости из всех источников
-    /rambler Новости Рамблер
-    /lenta Новости Лента.ру
-    /news_ru Новости News.ru"""
+    msg = get_greeting(news_sources)
     if message.chat.type == 'private':
         user_id = message.from_user.id
         if not user_is_present(user_id):
@@ -61,6 +53,7 @@ async def send_message_to_subscribers(message: types.Message):
 @router.message(Command(commands=news_sources.keys()))
 async def get_all_news(message: types.Message):
     await process_sources(message)
+    await cmd_buttons(message)
 
 
 async def cmd_buttons(message: types.Message):

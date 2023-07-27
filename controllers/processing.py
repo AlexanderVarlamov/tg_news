@@ -1,5 +1,5 @@
-import unicodedata
 import requests
+import unicodedata
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 
@@ -36,3 +36,11 @@ async def process_sources(message: Message):
         for key in source.keys():
             inner_list = source[key]
             await message.answer(text='\n'.join(inner_list), parse_mode=ParseMode.HTML)
+
+
+def get_greeting(sources_and_description: dict) -> str:
+    msg = 'Привет!\nЭто бот для агрегации последних новостей\nДопустимые опции:'
+    for key in sources_and_description.keys():
+        string_to_append = f'\n    /{key} {sources_and_description[key]}'
+        msg += string_to_append
+    return msg
