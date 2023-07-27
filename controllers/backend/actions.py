@@ -11,7 +11,6 @@ async def get_xml(rss_url: str):
 
 def parse_rss_for_web(xml: str):
     feed = feedparser.parse(xml)
-    print(feed)
     return [(item['title'], item['link']) for item in feed['entries']]
 
 
