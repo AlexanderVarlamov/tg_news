@@ -29,6 +29,12 @@ class RbcNewsGetter(NewsGetter):
     async def get_news(self):
         return await get_news_list(self._rss)
 
+
+class IxbtNewsGetter(NewsGetter):
+    _rss = "https://www.ixbt.com/export/news.rss"
+
+    async def get_news(self):
+        return await get_news_list(self._rss)
 class SourceNewsGetter:
     def __init__(self, source: NewsGetter):
         self.source = source
