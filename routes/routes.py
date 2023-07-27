@@ -1,18 +1,21 @@
 import logging
+from copy import deepcopy
 
-from aiogram import types, Router, Bot
+from aiogram import types, Router
 from aiogram.filters import Command
 from aiogram.filters.callback_data import CallbackData
-from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app import bot
-from conf import admin_id, api_token
+from conf import admin_id, internal_backend
+from controllers.backend.sources_dict import sources as news_sources_int
 from controllers.db import user_is_present, add_user, get_users, set_user_status
 from controllers.processing import process_sources
-from controllers.sources_dict import news_sources
+from controllers.sources_dict import news_sources as news_sources_ext
 
 router = Router()
+news_sources = deepcopy(news_sources_int) if internal_backend else news_sources_ext
+news_sources['all'] = 'all'
 
 
 class ButtonCallBack(CallbackData, prefix='but'):

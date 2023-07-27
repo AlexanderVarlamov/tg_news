@@ -3,7 +3,8 @@ import requests
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 
-from conf import backend_ip, backend_port, backend_api
+from conf import backend_ip, backend_port, backend_api, internal_backend
+from controllers.backend.req_processors import process_raw_news_request
 from controllers.sources_dict import news_sources
 
 NEWS_SERVER = f'http://{backend_ip}:{backend_port}{backend_api}'
@@ -24,9 +25,12 @@ def normalize_json(lst: list[dict]) -> list[dict]:
 
 
 async def process_sources(message: Message):
-    json_to_send = {"sources": [news_sources[message.text[1:]]]}
-    news = requests.post(NEWS_SERVER, json=json_to_send)
-    raw_json: list[dict] = news.json()['news']
+    if internal_backend:
+        raw_json = await process_raw_news_request([message.text[1:]])
+    else:
+        json_to_send = {"sources": [news_sources[message.text[1:]]]}
+        news = requests.post(NEWS_SERVER, json=json_to_send)
+        raw_json: list[dict] = news.json()['news']
     links_json = normalize_json(raw_json)
     for source in links_json:
         for key in source.keys():
