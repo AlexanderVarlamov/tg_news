@@ -14,19 +14,6 @@ def parse_rss_for_web(xml: str):
     return [(item['title'], item['links'][0]['href']) for item in feed['entries']]
 
 
-async def lenta_ru_news(raw=False) -> list:
-    rss_url = "https://lenta.ru/rss/last24"
-    xml = await get_xml(rss_url)
-    titles = parse_rss_for_web(xml)
-    return titles
-
-
-async def rambler_news(raw=False) -> list:
-    rss_url = "https://news.rambler.ru/rss/world/"
-    xml = await get_xml(rss_url)
-    titles = parse_rss_for_web(xml)
-    return titles
-
 async def get_news_list(rss_url) -> list:
     xml = await get_xml(rss_url)
     titles = parse_rss_for_web(xml)
